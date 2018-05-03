@@ -31,9 +31,8 @@ public class HomeController {
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
-	@Re @ResponseBody
-questMapping(value = "/", method = RequestMethod.GET)
-	public @ResponseBody String home(Locale locale, Model model, HttpServletRequest request) {
+	@RequestMapping(value = {"/", "/home"}, method = {RequestMethod.GET, RequestMethod.POST})
+	public @ResponseBody String home(Locale locale, Model model, HttpServletRequest request, HttpServletResponse response) {
 		
 		DtoUsuario user;
 		Boolean siadmin; //Si es administrador.
@@ -142,10 +141,16 @@ questMapping(value = "/", method = RequestMethod.GET)
 								}
 							}						
 							
+							response.addCookie(cookie); //Cookie de respuesta.
+							model.addAttribute("usuario", userDB); //Enviamos el usuario al jsp.
 							
+						} else {
+							System.out.println("No existe usuario en la cookie");
 						}
 					}
 				}
+				
+				
 				
 				
 			}
