@@ -33,6 +33,7 @@ public class DaoUsuario implements DaoUsuarioInterface {
 	
 	//Para comprobar si existe el usuario en la BBDD mediante su email.
 	public Boolean existeEmail(String email) {
+		
 		DtoUsuario usuario;
 		String sql = "select * from usuarios where Email = ?";
 		
@@ -46,5 +47,18 @@ public class DaoUsuario implements DaoUsuarioInterface {
 		//Si no existe un usuario:
 		if(usuario == null) return false;
 		else return true;
+		
+	}
+	
+	public DtoUsuario extraerUser (String email) {
+		
+		String sql = "select * from usuarios where email = ? ";
+		Object[] parametros = {email};
+		UsuarioMapper mapper = new UsuarioMapper();
+		List<DtoUsuario> datosuser = this.jdbcTemplate.query(sql, parametros, mapper);
+		
+		if (datosuser.isEmpty()) return null;
+		else return datosuser.get(0); //Devuelve el primer objeto de la lista, el que estamos buscando.
+		
 	}
 }

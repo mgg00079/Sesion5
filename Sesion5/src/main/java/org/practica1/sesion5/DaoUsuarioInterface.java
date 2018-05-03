@@ -6,4 +6,5 @@ public interface DaoUsuarioInterface {
 
 	public List<DtoUsuario> leeUsuarios();
 	public Boolean existeEmail(String email);
+	public DtoUsuario extraerUser (String email);
 }
