@@ -49,6 +49,7 @@ public class HomeController {
 		// Control de cookies
 		Boolean haycookies = false;
 		
+		
 		// Aviso de errores
 		String error = null; //Por defecto sin errores.
 		
