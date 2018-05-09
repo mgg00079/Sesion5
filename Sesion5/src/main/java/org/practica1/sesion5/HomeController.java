@@ -37,6 +37,7 @@ public class HomeController {
 		DtoUsuario user;
 		Boolean siadmin; //Si es administrador.
 		Boolean siuser;
+		Boolean existencookies =  true;
 		
 		DtoUsuario userDB = null;
 		
@@ -70,13 +71,14 @@ public class HomeController {
 				} else {
 					
 					siuser = true;
-					
 					return "welcome"; //No es admin, pero al estar registrado, manda a la pagina de productos.
+					
 				}
 				
 			} else {
 				
-				return "home"; 
+				return "home";
+				System.out.println("No existe usuario en la base de datos");
 				
 			}
 		
@@ -150,7 +152,38 @@ public class HomeController {
 					}
 				}
 				
+				if(siadmin == false && siuser == false) { //Si tampoco hay cookies.
+					
+					System.out.println("No existen cookies");
+					existencookies=false;
+					
+				}
 				
+			}
+			
+			if(cookies == null || existencookies == false) {
+				
+				if(request.getParameter("email") == null || request.getParameter("pass")==null) { //Pedimos los parámetros vacíos y mostramos home.jsp.
+					
+					return "home";
+					
+				}
+				
+			} else { //Si hay datos en la petición, leemos los parámetros del formulario home.jsp.
+				
+				String idusuario = request.getParameter("email");
+				String pass = request.getParameter("pass");
+				
+				System.out.println("name= " + idusuario + " pass= " + pass); //Mostramos el nombre de usuario y contraseña.
+				
+				Boolean existeusuario = dao.existeEmail(idusuario); //Comprobamos que existe en la BBDD.
+				
+				if(!existeusuario) {
+					
+					System.out.println("Error en el usuario o no existe");
+					
+					
+				}
 				
 				
 			}
@@ -170,6 +203,97 @@ public class HomeController {
 		
 
 		return "home";
+	}
+	
+	
+	//REGISTRO:
+	@RequestMapping(value = "/registro", method = {RequestMethod.GET, RequestMethod.POST})
+	public String registro(HttpServletRequest request, Model model) {
+		
+		String error = null;
+		
+		List<DtoProducto> lista = new ArrayList<DtoProducto>(); //Lista que contiene los atributos.
+		
+		if(request.getParameter("nombre") == null || request.getParameter("apellidos") == null ||
+				request.getParameter("email") == null || request.getParameter("pass") == null ||
+				request.getParameter("telefono") == null || request.getParameter("codpost") == null ||
+				request.getParameter("direccion") == null) {
+			
+			return "registro";
+			
+		} else { //Si no existe fallos al introducir los datos de usuario.
+			
+			//Extraemos los datos del formulario.			
+			String nombre = request.getParameter("nombre");
+			String email = request.getParameter("email");
+			
+			if(dao.existsName(nombre) || dao.existeEmail(email)) {
+				return "registro";
+				err = "Nombre o email en uso";
+				System.out.println("Nombre o email duplicado");
+			} else {
+				
+				return "welcome";
+				err = null;
+				
+				//Extraemos el resto de datos del formulario.
+				String apellidos = request.getParameter("apellidos");
+				String pass = request.getParameter("pass");
+				String telefono = request.getParameter("telefono");
+				String codpost = request.getParameter("codpost");
+				String direccion = request.getParameter("direccion");
+				String admin = request.getParameter("admin");
+				
+				
+				//Creamos objeto de la clase usuario.
+				DtoUsuario usuario = new DtoUsuario (nombre, apellidos, email, pass, telefono, codpost, direccion, admin);
+				
+				dao.create(usuario);
+				
+				Metodos.CrearSesion(request, usuario, lista);
+				
+				model.addAttribute("usuario", usuario); //Enviamos el objeto de la clase usuario al jsp.
+				model.addAttribute("lista", lista); //Enviaos la lista de productos al jsp.
+				
+			}
+		}
+		
+		model.addAttribute("err", err);
+		//return "registro";
+		
+	}
+	
+	//Permite a un usuario acceder a la pagina de productos.
+	@RequestMapping(value = "/producto", method = {RequestMethod.GET, RequestMethod.POST})
+	public String producto(HttpServletRequest request, Model model) {
+		
+		try {
+			
+			System.out.println("Entra en la pagina de productos, si hay sesion");
+			
+			HttpSession sesion = request.getSession(false); //Metodo que obtiene la sesion de la peticion y, si no existe, da error.
+			DtoUsuario usuario = (DtoUsuario) sesion.getAttribute("usuario"); //Extraemos el objeto usuario de la sesion.
+			System.out.println(user.getNombre()); //Mostramos el nombre.
+			List<DtoProducto> listaProducto = dao.read(); //Accedemos a la base de datos de productos.
+			model.addAttribute("lista", listaProducto);
+			return "compra";
+		
+		} catch (NullPointerException e) {
+			
+			System.out.println("Sesion no creada, volver a registrar");
+			return "home";
+			
+		}
+		
+	}
+	
+	@RequestMapping(value = "/carrito", method = {RequestMethod.GET, RequestMethod.POST})
+	public String carrito(HttpServlet request, Model model) {
+		
+		String err = null;
+		
+		
+		return null;
 	}
 	
 }
